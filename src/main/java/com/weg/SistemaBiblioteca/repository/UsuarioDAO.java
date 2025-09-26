@@ -3,27 +3,31 @@ package com.weg.SistemaBiblioteca.repository;
 import com.weg.SistemaBiblioteca.database.Conexao;
 import com.weg.SistemaBiblioteca.model.Livro;
 import com.weg.SistemaBiblioteca.model.Usuario;
+import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class UsuarioDAO {
 
-    public void salvar(Usuario usuario) throws SQLException {
-        String query = "INSERT INTO livro(nome,email) VALUES(?,?)";
+    public Usuario salvar(Usuario usuario) throws SQLException {
+        String query = "INSERT INTO usuario(nome,email) VALUES(?,?)";
 
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-
             stmt.executeUpdate();
+
+            ResultSet rs = stmt.getGeneratedKeys();
+            if(rs.next()){
+                usuario.setId(rs.getInt(1));
+            }
         }
+        return usuario;
     }
 
     public List<Usuario> buscarTodos() throws SQLException {
@@ -69,7 +73,7 @@ public class UsuarioDAO {
         return usuario;
     }
 
-    public void atualizar(Usuario usuario) throws SQLException {
+    public Usuario atualizar(Usuario usuario) throws SQLException {
         String query = "UPDATE usuario SET nome = ?, email = ? WHERE id = ?";
 
         try (Connection conn = Conexao.conectar();
@@ -77,9 +81,10 @@ public class UsuarioDAO {
 
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail());
-            stmt.setInt(4, usuario.getId());
+            stmt.setInt(3, usuario.getId());
             stmt.executeUpdate();
         }
+        return usuario;
     }
 
     public void deletar(int id) throws SQLException {

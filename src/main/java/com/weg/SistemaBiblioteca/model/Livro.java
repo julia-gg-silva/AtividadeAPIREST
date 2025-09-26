@@ -20,6 +20,10 @@ public class Livro {
         this.ano_publicacao = ano_publicacao;
     }
 
+    public Livro(){
+
+    }
+
     public int getId() {
         return id;
     }

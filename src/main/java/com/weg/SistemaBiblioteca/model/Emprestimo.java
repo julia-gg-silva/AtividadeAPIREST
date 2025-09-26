@@ -9,12 +9,11 @@ public class Emprestimo {
     private LocalDate data_emprestimo;
     private LocalDate data_devolucao;
 
-    public Emprestimo(int id, int livro_id, int usuario_id, LocalDate data_emprestimo, LocalDate data_devolucao) {
+    public Emprestimo(int id, int livro_id, int usuario_id, LocalDate data_emprestimo) {
         this.id = id;
         this.livro_id = livro_id;
         this.usuario_id = usuario_id;
         this.data_emprestimo = data_emprestimo;
-        this.data_devolucao = data_devolucao;
     }
 
     public Emprestimo(int livro_id, int usuario_id, LocalDate data_emprestimo, LocalDate data_devolucao) {
@@ -22,6 +21,10 @@ public class Emprestimo {
         this.usuario_id = usuario_id;
         this.data_emprestimo = data_emprestimo;
         this.data_devolucao = data_devolucao;
+    }
+
+    public Emprestimo(){
+
     }
 
     public int getId() {
