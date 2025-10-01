@@ -1,7 +1,10 @@
 package com.weg.SistemaBiblioteca.controller;
 
+import com.fasterxml.jackson.core.PrettyPrinter;
 import com.weg.SistemaBiblioteca.model.Emprestimo;
 import com.weg.SistemaBiblioteca.service.EmprestimoService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -20,51 +23,55 @@ public class EmprestimoController {
     }
 
     @PostMapping
-    public Emprestimo criarEmprestimo(@RequestBody Emprestimo emprestimo) {
+    public ResponseEntity<Emprestimo> criarEmprestimo(@RequestBody Emprestimo emprestimo) {
         Emprestimo newEmprestimo = new Emprestimo();
         try {
             newEmprestimo = service.criarEmprestimo(emprestimo);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return newEmprestimo;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(newEmprestimo);
     }
 
     @GetMapping
-    public List<Emprestimo> listarEmprestimos() {
+    public ResponseEntity<List<Emprestimo>> listarEmprestimos() {
         List<Emprestimo> emprestimos = new ArrayList<>();
         try {
             emprestimos = service.listarEmprestimos();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return emprestimos;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(emprestimos);
     }
 
     @GetMapping("/{id}")
-    public Emprestimo buscarEmprestimoPorId(@PathVariable int id) {
+    public ResponseEntity<Emprestimo> buscarEmprestimoPorId(@PathVariable int id) {
         Emprestimo emprestimo = new Emprestimo();
         try {
             emprestimo = service.buscarEmprestimoPorId(id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return emprestimo;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(emprestimo);
     }
 
     @PutMapping("/{id}")
-    public Emprestimo atualizarEmprestimo(@PathVariable int id, @RequestBody Emprestimo emprestimo){
+    public ResponseEntity<Emprestimo> atualizarEmprestimo(@PathVariable int id, @RequestBody Emprestimo emprestimo){
         Emprestimo newEmprestimo = new Emprestimo();
         try{
             newEmprestimo = service.atualizarEmprestimo(id, emprestimo);
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return  newEmprestimo;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(newEmprestimo);
     }
 
     @PutMapping("/{id}/devolucao")
-    public Emprestimo atualizarDataDevolucao(@PathVariable int id, @RequestBody Emprestimo emprestimo){
+    public ResponseEntity<Emprestimo> atualizarDataDevolucao(@PathVariable int id, @RequestBody Emprestimo emprestimo){
         Emprestimo newEmprestimo = new Emprestimo();
 
         try{
@@ -72,15 +79,18 @@ public class EmprestimoController {
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return newEmprestimo;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(newEmprestimo);
     }
 
     @DeleteMapping("/{id}")
-    public void deletarEmprestimo(@PathVariable int id){
+    public ResponseEntity<Void> deletarEmprestimo(@PathVariable int id){
         try{
             service.deletarEmprestimo(id);
         }catch (SQLException e){
             e.printStackTrace();
         }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }

@@ -4,6 +4,8 @@ import com.weg.SistemaBiblioteca.model.Livro;
 
 import com.weg.SistemaBiblioteca.model.Usuario;
 import com.weg.SistemaBiblioteca.service.LivroService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,20 +24,21 @@ public class LivroController {
     }
 
     @PostMapping
-    public Livro criarLivro(@RequestBody Livro livro){
+    public ResponseEntity<Livro> criarLivro(@RequestBody Livro livro){
         Livro newLivro = new Livro();
 
         try{
             newLivro = service.salvarLivro(livro);
-            return newLivro;
+
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return newLivro;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(newLivro);
     }
 
     @GetMapping
-    public List<Livro> listarLivros(){
+    public ResponseEntity<List<Livro>> listarLivros(){
         List<Livro> livros = new ArrayList<>();
         try {
             livros = service.listarLivros();
@@ -43,11 +46,12 @@ public class LivroController {
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return livros;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(livros);
     }
 
     @GetMapping("/{id}")
-    public Livro buscarLivroPorId(@PathVariable int id){
+    public ResponseEntity<Livro> buscarLivroPorId(@PathVariable int id){
         Livro livro = new Livro();
 
         try{
@@ -56,25 +60,29 @@ public class LivroController {
             e.printStackTrace();
         }
 
-        return livro;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(livro);
     }
 
     @PutMapping("/{id}")
-    public Livro atualizarLivro(@PathVariable int id, @RequestBody Livro livro){
+    public ResponseEntity<Livro> atualizarLivro(@PathVariable int id, @RequestBody Livro livro){
         try{
           livro = service.atualizarLivro(id, livro);
         }catch (SQLException e){
             e.printStackTrace();
         }
-        return  livro;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(livro);
     }
 
     @DeleteMapping("/{id}")
-    public void deletarLivro(@PathVariable int id){
+    public ResponseEntity<Void> deletarLivro(@PathVariable int id){
         try{
             service.deletarLivro(id);
         }catch (SQLException e){
             e.printStackTrace();
         }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }
