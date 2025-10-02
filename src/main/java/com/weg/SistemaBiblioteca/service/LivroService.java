@@ -1,5 +1,9 @@
 package com.weg.SistemaBiblioteca.service;
 
+import com.weg.SistemaBiblioteca.dto.livro.CriacaoLivroRequisicaoDTO;
+import com.weg.SistemaBiblioteca.dto.livro.CriacaoLivroRespostaDTO;
+import com.weg.SistemaBiblioteca.exceptions.LivroNaoExisteException;
+import com.weg.SistemaBiblioteca.maper.livro.LivroMapper;
 import com.weg.SistemaBiblioteca.model.Livro;
 import com.weg.SistemaBiblioteca.repository.LivroDAO;
 import org.springframework.stereotype.Service;
@@ -11,51 +15,47 @@ import java.util.List;
 public class LivroService {
 
     private final LivroDAO repository;
+    private final LivroMapper mapper;
 
-    public LivroService(LivroDAO repository) {
+    public LivroService(LivroDAO repository, LivroMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
-    public Livro salvarLivro(Livro livro) throws SQLException {
-        return repository.salvar(livro);
+    public CriacaoLivroRespostaDTO salvarLivro(CriacaoLivroRequisicaoDTO requisicaoDTO) throws SQLException {
+        return mapper.paraRespostaDto(repository.salvar(mapper.paraEntidade(requisicaoDTO)));
     }
 
-    public List<Livro> listarLivros() throws SQLException{
-        return repository.buscarTodos();
+    public List<CriacaoLivroRespostaDTO> listarLivros() throws SQLException{
+        return repository.buscarTodos().stream()
+                .map(mapper::paraRespostaDto)
+                .toList();
     }
 
-    public Livro buscarLivroPorId(int id) throws SQLException{
-        List<Livro> livros = repository.buscarTodos();
+    public CriacaoLivroRespostaDTO buscarLivroPorId(int id) throws SQLException{
+        Livro livro = repository.buscarPorId(id);
 
-        for(Livro l : livros){
-            if(l.getId() == id){
-                return repository.buscarPorId(id);
-            }
+        if(livro == null){
+            throw new LivroNaoExisteException();
         }
-        throw new RuntimeException("Não existe nenhum livro com este ID!");
+        return mapper.paraRespostaDto(livro);
     }
 
-    public Livro atualizarLivro(int id, Livro livro) throws SQLException{
-        List<Livro> livros = repository.buscarTodos();
-        livro.setId(id);
+    public CriacaoLivroRespostaDTO atualizarLivro(int id, CriacaoLivroRequisicaoDTO requisicaoDTO) throws SQLException{
+        Livro livro = repository.buscarPorId(id);
 
-        for(Livro l: livros){
-            if(l.getId() == livro.getId()){
-               return repository.atualizar(livro);
-            }
+        if(livro == null){
+            throw new LivroNaoExisteException();
         }
-        throw new RuntimeException("Não existe nenhum livro com este ID");
+
+        return mapper.paraRespostaDto(repository.atualizar(mapper.paraEntidade(requisicaoDTO), id));
     }
 
     public void deletarLivro(int id) throws SQLException{
-        List<Livro> livros = repository.buscarTodos();
-
-        for(Livro l : livros){
-            if(l.getId() == id){
-                repository.deletar(id);
-                return;
-            }
+        if(!repository.livroExiste(id)){
+            throw new LivroNaoExisteException();
         }
-        throw new RuntimeException("Não existe nenhum livro com este ID");
+
+         repository.deletar(id);
     }
 }

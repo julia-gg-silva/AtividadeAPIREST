@@ -18,8 +18,8 @@ public class LivroDAO {
         try(Connection conn = Conexao.conectar();
         PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)){
 
-            stmt.setString(1, livro.getAutor());
-            stmt.setString(2, livro.getTitulo());
+            stmt.setString(1, livro.getTitulo());
+            stmt.setString(2, livro.getAutor());
             stmt.setInt(3, livro.getAno_publicacao());
 
             stmt.executeUpdate();
@@ -78,8 +78,9 @@ public class LivroDAO {
         return livro;
     }
 
-    public Livro atualizar(Livro livro) throws SQLException{
+    public Livro atualizar(Livro livro, int id) throws SQLException{
         String query = "UPDATE livro SET titulo = ?, autor = ?, ano_publicacao = ? WHERE id = ?";
+        livro.setId(id);
 
         try(Connection conn = Conexao.conectar();
             PreparedStatement stmt = conn.prepareStatement(query)){
@@ -102,5 +103,22 @@ public class LivroDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
+    }
+
+    public boolean livroExiste(int id) throws SQLException{
+        String query = "SELECT id FROM livro WHERE id = ?";
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

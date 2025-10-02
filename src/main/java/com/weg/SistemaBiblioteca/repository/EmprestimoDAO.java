@@ -26,7 +26,7 @@ public class EmprestimoDAO {
             stmt.executeUpdate();
 
             ResultSet rs = stmt.getGeneratedKeys();
-            if(rs.next()){
+            if (rs.next()) {
                 emprestimo.setId(rs.getInt(1));
             }
         }
@@ -94,17 +94,16 @@ public class EmprestimoDAO {
         return emprestimo;
     }
 
-    public Emprestimo atualizarDataDevolucao(Emprestimo emprestimo) throws SQLException {
+    public void atualizarDataDevolucao(int id, LocalDate dataDevolucao) throws SQLException {
         String query = "UPDATE emprestimo SET data_devolucao=? WHERE id = ?";
 
         try (Connection conn = Conexao.conectar();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setDate(1, Date.valueOf(emprestimo.getData_devolucao()));
-            stmt.setInt(2, emprestimo.getId());
+            stmt.setDate(1, Date.valueOf(dataDevolucao));
+            stmt.setInt(2, id);
             stmt.executeUpdate();
         }
-        return emprestimo;
     }
 
     public void deletar(int id) throws SQLException {
@@ -117,4 +116,22 @@ public class EmprestimoDAO {
             stmt.executeUpdate();
         }
     }
+
+    public boolean emprestimoExiste(int id) throws SQLException {
+        String query = "SELECT id FROM emprestimo WHERE id = ?";
+
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, id);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

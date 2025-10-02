@@ -1,6 +1,12 @@
 package com.weg.SistemaBiblioteca.service;
 
+import com.weg.SistemaBiblioteca.dto.dataDevDTO.DataDevRequisicaoDTO;
+import com.weg.SistemaBiblioteca.dto.emprestimo.CriacaoEmprestimoRequisicaoDTO;
+import com.weg.SistemaBiblioteca.dto.emprestimo.CriacaoEmprestimoRespostaDTO;
+import com.weg.SistemaBiblioteca.exceptions.EmprestimoNaoExisteException;
+import com.weg.SistemaBiblioteca.maper.emprestimo.EmprestimoMapper;
 import com.weg.SistemaBiblioteca.model.Emprestimo;
+import com.weg.SistemaBiblioteca.model.Usuario;
 import com.weg.SistemaBiblioteca.repository.EmprestimoDAO;
 import org.springframework.stereotype.Service;
 
@@ -11,56 +17,59 @@ import java.util.List;
 public class EmprestimoService {
 
     private final EmprestimoDAO repository;
+    private final EmprestimoMapper mapper;
 
 
-    public EmprestimoService(EmprestimoDAO repository) {
+    public EmprestimoService(EmprestimoDAO repository, EmprestimoMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
-    public Emprestimo criarEmprestimo(Emprestimo emprestimo) throws SQLException {
-        return repository.salvar(emprestimo);
+    public CriacaoEmprestimoRespostaDTO criarEmprestimo(CriacaoEmprestimoRequisicaoDTO requisicaoDTO) throws SQLException {
+        return mapper.paraRespostaDto(repository.salvar(mapper.paraEntidade(requisicaoDTO)));
     }
 
-    public List<Emprestimo> listarEmprestimos() throws SQLException{
-        return repository.buscarTodos();
+    public List<CriacaoEmprestimoRespostaDTO> listarEmprestimos() throws SQLException{
+        return repository.buscarTodos().stream()
+                .map(mapper::paraRespostaDto)
+                .toList();
     }
 
-    public Emprestimo buscarEmprestimoPorId(int id) throws SQLException{
-        List<Emprestimo> emprestimos = repository.buscarTodos();
+    public CriacaoEmprestimoRespostaDTO buscarEmprestimoPorId(int id) throws SQLException{
+        Emprestimo emprestimo = repository.buscarPorId(id);
 
-        for(Emprestimo e: emprestimos){
-            if(e.getId() == id){
-                return repository.buscarPorId(id);
-            }
+        if(emprestimo == null){
+            throw new EmprestimoNaoExisteException();
         }
-        throw new RuntimeException("Não existe algum Emprestimo com este ID!");
+
+        return mapper.paraRespostaDto(emprestimo);
     }
 
-    public Emprestimo atualizarEmprestimo(int id, Emprestimo emprestimo) throws SQLException{
-        emprestimo.setId(id);
-        List<Emprestimo> emprestimos = repository.buscarTodos();
+    public CriacaoEmprestimoRespostaDTO atualizarEmprestimo(int id, CriacaoEmprestimoRequisicaoDTO requisicaoDTO) throws SQLException{
+        Emprestimo emprestimo = repository.buscarPorId(id);
 
-        for(Emprestimo e : emprestimos){
-            if(e.getId() == emprestimo.getId()){
-                return repository.atualizar(emprestimo);
-            }
+        if(emprestimo == null){
+            throw new EmprestimoNaoExisteException();
         }
-        throw new RuntimeException("Não existe algum Emprestimo com este ID!");
+
+        Emprestimo newEmprestimo = mapper.paraUpdate(requisicaoDTO, emprestimo);
+        repository.atualizar(newEmprestimo);
+        return mapper.paraRespostaDto(newEmprestimo);
     }
 
-    public Emprestimo atualizarDataDevolucao(int id, Emprestimo emprestimo) throws SQLException{
-        emprestimo.setId(id);
-        List<Emprestimo> emprestimos = repository.buscarTodos();
-
-        for(Emprestimo e : emprestimos){
-            if(e.getId() == emprestimo.getId()){
-                return repository.atualizarDataDevolucao(emprestimo);
-            }
+    public void atualizarDataDevolucao(int id, DataDevRequisicaoDTO requisicaoDTO) throws SQLException{
+        if(!repository.emprestimoExiste(id)){
+            throw  new EmprestimoNaoExisteException();
         }
-        throw new RuntimeException("Não existe algum Emprestimo com este ID!");
+
+        repository.atualizarDataDevolucao(id,requisicaoDTO.dataDevolucao());
     }
 
     public void deletarEmprestimo(int id) throws SQLException{
+        if(!repository.emprestimoExiste(id)){
+            throw new EmprestimoNaoExisteException();
+        }
+
         repository.deletar(id);
     }
 }
